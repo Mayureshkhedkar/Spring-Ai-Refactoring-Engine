@@ -1,4 +1,4 @@
-package com.refractor_ai.code_review_engine;
+package com.refractor_ai.code_review_engine.Controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
