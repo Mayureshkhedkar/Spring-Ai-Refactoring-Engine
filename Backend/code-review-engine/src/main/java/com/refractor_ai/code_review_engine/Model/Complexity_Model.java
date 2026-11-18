@@ -11,7 +11,12 @@ import lombok.NoArgsConstructor;
 
 public class Complexity_Model {
     private Integer response_id;
+    private String batch_id;
+    private String model_name;
+    private String refactored_code;
     private String time_complexity;
     private String space_complexity;
-    private String response_time;
+    private Integer cyclomatic_complexity;
+    private Long response_time_ms;
+    private Integer retry_count;
 }
