@@ -34,6 +34,7 @@ public class NvidiaConfig {
 
         return OpenAiChatModel.builder()
                 .openAiClient(client)
+                .openAiClientAsync(client.async())
                 .options(options)
                 .build();
     }
