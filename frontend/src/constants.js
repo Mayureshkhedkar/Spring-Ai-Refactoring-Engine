@@ -62,6 +62,32 @@ export const MOCK_LEGACY_JAVA = `public class LegacyOrderProcessor {
     }
 }`;
 
+export const STUDENT_PROCESSOR_JAVA = `public class StudentProcessor {
+
+
+    public void processStudents(List<Student> students) {
+
+
+        for (int i = 0; i < students.size(); i++) {
+            Student student = students.get(i);
+
+
+            for (int j = 0; j < students.size(); j++) {
+                Student other = students.get(j);
+
+
+                for (int k = 0; k < 5; k++) {
+                    if (student != null && other != null) {
+                        if (student.getId() == other.getId()) {
+                            System.out.println(student.getName());
+                        }
+                    }
+                }
+            }
+        }
+    }
+}`;
+
 export const MODEL_CONFIGS = {
   nemotron: {
     type: 'nemotron',
@@ -106,3 +132,45 @@ export const MODEL_CONFIGS = {
 };
 
 export const DEFAULT_MODEL_ORDER = ['nemotron', 'gpt4o', 'gemini', 'claude'];
+
+export const MOCK_API_RESPONSE = {
+  "batch_id": "req-mock-1234",
+  "results": [
+    { 
+      "model_name": "Ollama (Qwen)", 
+      "time_complexity": "O(n)", 
+      "space_complexity": "O(1)", 
+      "cyclomatic_complexity": 3, 
+      "response_time_ms": 1205, 
+      "retry_count": 1, 
+      "refactored_code": "public void optimized() {\n  // Ollama refactored code\n}" 
+    },
+    { 
+      "model_name": "Claude 3.5", 
+      "time_complexity": "O(log n)", 
+      "space_complexity": "O(1)", 
+      "cyclomatic_complexity": 2, 
+      "response_time_ms": 450, 
+      "retry_count": 0, 
+      "refactored_code": "public void optimized() {\n  // Claude refactored code\n}" 
+    },
+    { 
+      "model_name": "GPT-4o", 
+      "time_complexity": "O(log n)", 
+      "space_complexity": "O(1)", 
+      "cyclomatic_complexity": 2, 
+      "response_time_ms": 600, 
+      "retry_count": 0, 
+      "refactored_code": "public void optimized() {\n  // GPT refactored code\n}" 
+    },
+    { 
+      "model_name": "Gemini 1.5", 
+      "time_complexity": "O(n)", 
+      "space_complexity": "O(n)", 
+      "cyclomatic_complexity": 3, 
+      "response_time_ms": 520, 
+      "retry_count": 0, 
+      "refactored_code": "public void optimized() {\n  // Gemini refactored code\n}" 
+    }
+  ]
+};

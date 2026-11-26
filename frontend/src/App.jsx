@@ -11,9 +11,11 @@ import {
   X, Cpu, GitBranch, MessageSquare
 } from 'lucide-react';
 import { cn } from './lib/utils';
-import { MOCK_LEGACY_JAVA, MODEL_CONFIGS, DEFAULT_MODEL_ORDER, REFACTORING_GOALS } from './constants';
+import { MOCK_LEGACY_JAVA, STUDENT_PROCESSOR_JAVA, MODEL_CONFIGS, DEFAULT_MODEL_ORDER, REFACTORING_GOALS, MOCK_API_RESPONSE } from './constants';
 import { CodeInputArea } from './components/CodeInputArea';
 import { ComparisonGrid } from './components/ComparisonGrid';
+import { LandingPage } from './components/LandingPage';
+import { ModelResultCard } from './components/ModelResultCard';
 import { generateMockModelResult, validateRefactorResponse } from './lib/utils';
 import { analyzeCode } from './services/api';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -59,7 +61,7 @@ const SIMULATE_API_DELAY = true;
 
 export function App() {
   // Core State
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(STUDENT_PROCESSOR_JAVA);
   const [results, setResults] = useState([]);
   const [loadingModels, setLoadingModels] = useState([]);
   const [selectedModels, setSelectedModels] = useState(DEFAULT_MODEL_ORDER);
@@ -72,6 +74,8 @@ export function App() {
   const [viewMode, setViewMode] = useState('grid');
   const [focusedModel, setFocusedModel] = useState(undefined);
   const [showHelp, setShowHelp] = useState(false);
+  const [isEngineInitialized, setIsEngineInitialized] = useState(false);
+  const [hasRefactored, setHasRefactored] = useState(false);
   const [theme, setTheme] = useState(() => {
     // FIXED: Initialize theme from localStorage or document.documentElement
     if (typeof window !== 'undefined') {
@@ -81,17 +85,17 @@ export function App() {
     }
     return 'dark';
   });
-  const [requestId, setRequestId] = useState(undefined);
+const [requestId, setRequestId] = useState(undefined);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [reviewResults, setReviewResults] = useState(null);
+  
+  // Handle landing page initialization
+  const handleInitialize = useCallback(() => {
+    setIsEngineInitialized(true);
+  }, []);
   
   // Refs
   const startTimeRef = useRef(0);
-
-  // Initialize with sample code on first load
-  useEffect(() => {
-    if (!code && !isRefactoring) {
-      setCode(MOCK_LEGACY_JAVA);
-    }
-  }, []);
 
   // FIXED: Theme management - properly toggle dark class on document.documentElement
   useEffect(() => {
@@ -102,6 +106,30 @@ export function App() {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Scroll to top on initial load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Scroll to top when engine initializes (curtain slides up)
+  useEffect(() => {
+    if (isEngineInitialized) {
+      window.scrollTo(0, 0);
+    }
+  }, [isEngineInitialized]);
+
+  // Control body overflow - prevent scrolling while landing page is shown
+  useEffect(() => {
+    if (!isEngineInitialized) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isEngineInitialized]);
 
   // Generate mock response for demonstration (fallback when API unavailable)
   const generateMockResponse = useCallback(async (request) => {
@@ -166,6 +194,7 @@ export function App() {
   const handleRefactor = useCallback(async (request) => {
     setError(undefined);
     setIsRefactoring(true);
+    setHasRefactored(true);
     setResults([]);
     setSummary(undefined);
     setTotalExecutionTime(undefined);
@@ -252,7 +281,7 @@ export function App() {
 
   // FIXED: Clear all - safely reset ALL state variables to their correct initial types
   const handleClearAll = useCallback(() => {
-    setCode('');
+    setCode(STUDENT_PROCESSOR_JAVA);
     setResults([]);
     setLoadingModels([]);
     setTotalExecutionTime(undefined);
@@ -261,6 +290,8 @@ export function App() {
     setRequestId(undefined);
     setFocusedModel(undefined);
     setViewMode('grid');
+    setReviewResults(null);
+    setHasRefactored(false);
     // Note: selectedModels and theme are intentionally preserved
   }, []);
 
@@ -360,9 +391,18 @@ export function App() {
         </div>
       </header>
 
-      {/* Main Content - WRAPPED IN ERROR BOUNDARY */}
-      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Input Area - wrapped in ErrorBoundary */}
+      {/* App Container - Curtain Reveal Layout */}
+      <div className="app-container">
+        {/* Landing Page - Curtain Reveal */}
+        <LandingPage 
+          isInitialized={isEngineInitialized} 
+          onInitialize={handleInitialize} 
+        />
+
+        {/* Main Workspace - Revealed when curtain slides up */}
+        <div className="workspace-container">
+          <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* Input Area - wrapped in ErrorBoundary */}
         <ErrorBoundary 
           fallback={(error, retry) => (
             <div className="card p-6 text-center">
@@ -386,6 +426,28 @@ export function App() {
             />
           </section>
         </ErrorBoundary>
+
+        {/* Results Dashboard - Shows mock API response after analysis */}
+        {reviewResults && (
+          <section className="mt-8 animate-slide-up" aria-labelledby="results-heading">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 id="results-heading" className="text-2xl font-bold text-text-primary">
+                  Analysis Results
+                </h2>
+                <p className="text-text-muted mt-1">
+                  Batch ID: <code className="font-mono bg-bg-tertiary px-2 py-0.5 rounded">{reviewResults.batch_id}</code>
+                </p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {reviewResults.results.map((result, index) => (
+                <ModelResultCard key={`${result.model_name}-${index}`} result={result} index={index} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Comparison Grid - wrapped in ErrorBoundary */}
         <ErrorBoundary
@@ -418,28 +480,30 @@ export function App() {
               );
             }
             return (
-              <section key="empty" className="text-center py-16 sm:py-24">
-                <div className="max-w-2xl mx-auto">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 flex items-center justify-center mx-auto mb-6">
-                    <Cpu className="w-10 h-10 text-accent-primary/60" />
+              !hasRefactored ? (
+                <section key="empty" className="text-center py-16 sm:py-24">
+                  <div className="max-w-2xl mx-auto">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 flex items-center justify-center mx-auto mb-6">
+                      <Cpu className="w-10 h-10 text-accent-primary/60" />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-3">Ready to Refactor</h2>
+                    <p className="text-text-secondary mb-6 max-w-md mx-auto">
+                      Paste legacy Java code above and click "Refactor Code" to see how four leading AI models 
+                      transform and modernize your codebase with detailed metrics comparison.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-muted">
+                      {DEFAULT_MODEL_ORDER.map((modelKey) => (
+                        <div key={modelKey} className="flex items-center gap-2 px-3 py-1.5 bg-bg-tertiary rounded-full border border-border-primary">
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: MODEL_CONFIGS[modelKey]?.color }} />
+                          <span>{MODEL_CONFIGS[modelKey]?.shortName}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-3">Ready to Refactor</h2>
-                  <p className="text-text-secondary mb-6 max-w-md mx-auto">
-                    Paste legacy Java code above and click "Refactor Code" to see how four leading AI models 
-                    transform and modernize your codebase with detailed metrics comparison.
-                  </p>
-                  <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-muted">
-                    {DEFAULT_MODEL_ORDER.map((modelKey) => (
-                      <div key={modelKey} className="flex items-center gap-2 px-3 py-1.5 bg-bg-tertiary rounded-full border border-border-primary">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: MODEL_CONFIGS[modelKey]?.color }} />
-                        <span>{MODEL_CONFIGS[modelKey]?.shortName}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
+                </section>
+              ) : null
             );
-          })()}
+          })}
         </ErrorBoundary>
 
         {/* Request ID Footer */}
@@ -452,6 +516,8 @@ export function App() {
           </div>
         )}
       </main>
+      </div>
+      </div>
 
       {/* Help Modal */}
       {showHelp && (

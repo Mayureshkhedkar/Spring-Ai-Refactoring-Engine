@@ -14,26 +14,27 @@ public class Complexity_Records {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer response_id; // Primary Key
+    @Column(name = "response_id")
+    private Integer responseId;
 
-    @Column(nullable = false)
-    private String batch_id; // Groups the 4 AI models to the 1 user request
+    @Column(name = "batch_id", nullable = false)
+    private String batchId;
 
-    @Column(nullable = false)
-    private String model_name; // Identifies "Ollama", "Gemini", "GPT", or "Claude"
+    @Column(name = "model_name", nullable = false)
+    private String modelName;
 
-    @Column
-    private String time_complexity; // Stores Big-O string like "O(n)"
+    @Column(name = "time_complexity")
+    private String timeComplexity;
 
-    @Column
-    private String space_complexity; // Stores Big-O string like "O(1)"
+    @Column(name = "space_complexity")
+    private String spaceComplexity;
 
-    @Column
-    private Integer cyclomatic_complexity; // Stores the mathematical branching score (e.g., 4)
+    @Column(name = "cyclomatic_complexity")
+    private Integer cyclomaticComplexity;
 
-    @Column
-    private Long response_time_ms; // Stored in milliseconds to allow mathematical averaging
+    @Column(name = "response_time_ms")
+    private Long responseTimeMs;
 
-    @Column
-    private Integer retry_count; // Tracks how many times the AI failed to compile
+    @Column(name = "retry_count")
+    private Integer retryCount;
 }

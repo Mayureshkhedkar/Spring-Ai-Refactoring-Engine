@@ -115,6 +115,74 @@
   to { opacity: 1; }
 }
 
+/* Curtain reveal animation for landing page */
+@utility animate-curtain-up {
+  animation: curtain-up 800ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+@keyframes curtain-up {
+  from { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translateY(-110%); 
+    opacity: 0; 
+  }
+}
+
+/* Curtain container for proper stacking */
+@utility curtain-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* === Curtain Reveal Effect === */
+
+/* Main app container - relative positioning with normal flow */
+.app-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  /* Remove overflow: hidden - allow scrolling when landing page is gone */
+}
+
+/* Landing page overlay - fixed positioned on top, full viewport height, scrollable */
+.landing-screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  z-index: 50;
+  background: var(--bg-primary);
+  overflow-y: auto;
+  /* Remove flex centering - use column layout with auto margins on content */
+  display: flex;
+  flex-direction: column;
+  /* Curtain transition */
+  transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1),
+              opacity 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+  pointer-events: auto;
+}
+
+/* Slide up animation - applies when initialized */
+.landing-screen.slide-up {
+  transform: translateY(-100%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Main workspace container - sits underneath, normal document flow */
+.workspace-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100vh;
+  /* Allow natural scrolling */
+}
+
+/* === End Curtain Reveal Effect === */
+
 * {
   box-sizing: border-box;
 }

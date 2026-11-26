@@ -10,5 +10,5 @@ import java.util.List;
 @AllArgsConstructor
 public class CodeReviewResponseDTO {
     private String batch_id;
-    private List<Complexity_Model> results; // Holds Ollama, GPT, Claude, and Gemini in one array
+    private List<ComplexityModel> results; // Holds Ollama, GPT, Claude, and Gemini in one array
 }

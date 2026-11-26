@@ -5,9 +5,9 @@
  */
 
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { Copy, X, FileText, Clock } from 'lucide-react';
+import { Copy, X, FileText, Clock, RotateCcw } from 'lucide-react';
 import { cn, formatNumber, formatDuration } from '../lib/utils';
-import { MODEL_CONFIGS, DEFAULT_MODEL_ORDER } from '../constants';
+import { MODEL_CONFIGS, DEFAULT_MODEL_ORDER, MOCK_API_RESPONSE, STUDENT_PROCESSOR_JAVA } from '../constants';
 import { MetricBadge } from './MetricBadge';
 
 export function CodeInputArea({
@@ -59,9 +59,9 @@ export function CodeInputArea({
     onRefactor(request);
   }, [code, onRefactor, selectedModels]);
 
-  // Clear code only (for the toolbar button)
+  // Clear code only (for the toolbar button) - resets to default StudentProcessor code
   const handleClearCode = useCallback(() => {
-    onCodeChange('');
+    onCodeChange(STUDENT_PROCESSOR_JAVA);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -209,7 +209,7 @@ export function CodeInputArea({
             value={code || ''}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder={hasCode ? '' : 'Paste your legacy Java code here...\n\nExample:\npublic class LegacyService {\n    public void processData() {\n        // Your legacy code\n    }\n}'}
+            placeholder=""
             className={cn(
               'input-area',
               'min-h-[240px]',
@@ -222,22 +222,6 @@ export function CodeInputArea({
             spellCheck={false}
           />
           
-          {/* Placeholder overlay for better control */}
-          {!hasCode && !isLoading && (
-            <div className="pointer-events-none absolute inset-5 text-text-muted text-sm font-mono leading-relaxed select-none">
-              Paste your legacy Java code here...
-              <br /><br />
-              <span className="text-xs opacity-60">
-                Example:
-                <br />public class LegacyService &#123;
-                <br />&nbsp;&nbsp;public void processData() &#123;
-                <br />&nbsp;&nbsp;&nbsp;&nbsp;// Your legacy code
-                <br />&nbsp;&nbsp;&#125;
-                <br />&#125;
-              </span>
-            </div>
-          )}
-
           {/* Loading overlay */}
           {isLoading && (
             <div className="absolute inset-0 bg-bg-primary/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
@@ -300,9 +284,7 @@ export function CodeInputArea({
               aria-label="Start refactoring"
             >
               <span className="relative">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <RotateCcw className="w-4 h-4" />
               </span>
               <span>{isLoading ? 'Refactoring...' : 'Refactor Code'}</span>
               <div className="absolute -inset-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-lg opacity-0 group-hover:opacity-20 transition-opacity -z-10 blur" />
